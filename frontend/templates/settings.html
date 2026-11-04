@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AnonyHost - DarkWeb Hosting Tool</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas><div id="globe" aria-hidden="true"></div>
+{% include "side.html" %}
+<main><header class="hero"><h1 class="ttl">Settings</h1></header>
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+<div class="grid">
+<section class="card c6"><h2>Change password</h2><form method="post" action="/settings/password"><input type="hidden" name="csrf" value="{{csrf}}">
+<input class="field" type="password" name="current" placeholder="current password" autocomplete="current-password" required>
+<input class="field" type="password" name="new" placeholder="new password (10+ characters)" autocomplete="new-password" required minlength="10">
+<input class="field" type="password" name="confirm" placeholder="repeat new password" autocomplete="new-password" required>
+<button class="btn go">Save password</button></form>
+<p class="mut">Forgot your password? Use "Forgot password?" on the login page with your recovery key.</p></section>
+<section class="card c6"><h2>Recovery key</h2><p class="mut">{% if has_recovery %}A recovery key is set. Creating a new one makes the old key stop working.{% else %}No recovery key yet. Create one so you can reset your password if you forget it.{% endif %}</p>
+<form method="post" action="/settings/recovery"><input type="hidden" name="csrf" value="{{csrf}}"><input class="field" type="password" name="current" placeholder="current password" required autocomplete="current-password">
+<button class="btn">{% if has_recovery %}New recovery key{% else %}Create recovery key{% endif %}</button></form></section>
+<section class="card c6"><h2>Tor Browser</h2>
+<p class="mut">{% if tb %}Found: {{tb}}{% else %}Not found. Install it with <code>sudo apt install torbrowser-launcher</code> or from torproject.org/download, then set its location below if needed.{% endif %}</p>
+<form method="post" action="/settings/torbrowser"><input type="hidden" name="csrf" value="{{csrf}}"><input class="field" name="path" value="{{tb_path}}" placeholder="/path/to/start-tor-browser (optional)"><button class="btn">Save location</button></form></section>
+<section class="card c6"><h2>Startup</h2><form method="post" action="/settings/startup"><input type="hidden" name="csrf" value="{{csrf}}">
+<label class="lbl"><input type="checkbox" name="autostart" {% if autostart %}checked{% endif %}> Start hosting automatically when AnonyHost opens</label>
+<button class="btn">Save</button></form></section>
+<section class="card c6"><h2>Limits &amp; locations</h2><dl class="kv"><dt>Version</dt><dd>{{version}}</dd><dt>Max website size</dt><dd>{{max_gb}} GB</dd><dt>Hosting port</dt><dd>127.0.0.1:{{port}}</dd><dt>Data folder</dt><dd>{{base}}</dd><dt>Dashboard</dt><dd>this computer only</dd></dl></section>
+<section class="card c12" style="border-color:var(--bad)"><h2 style="color:var(--bad)">Reset</h2><div class="grid" style="gap:24px">
+<div class="c6"><h3 class="sub">Reset settings</h3><p class="mut">Restores the port, Tor Browser path and startup options to defaults and stops hosting. Your website, account and onion address are kept.</p>
+<form method="post" action="/reset/settings" onsubmit="return confirm('Reset settings and stop hosting?')"><input type="hidden" name="csrf" value="{{csrf}}"><button class="btn">Reset settings</button></form></div>
+<div class="c6"><h3 class="sub">Factory reset</h3><p class="mut">Stops hosting and deletes your website, settings, logs, Tor data and administrator account. AnonyHost returns to the first-run screen. Backups are never deleted.</p>
+<form method="post" action="/reset/factory" onsubmit="return confirm('This cannot be undone. Continue?')"><input type="hidden" name="csrf" value="{{csrf}}">
+<input class="field" type="password" name="password" placeholder="your password" required autocomplete="current-password">
+<input class="field" name="confirm" placeholder="type RESET" required autocomplete="off">
+<label class="lbl" style="color:var(--bad)"><input type="checkbox" name="delete_keys"> Also delete my onion address keys (permanent: the .onion address is lost forever)</label>
+<button class="btn stop">Factory reset</button></form></div></div></section>
+</div><footer>Author: <a href="https://www.tca.ac.tz" target="_blank" rel="noopener noreferrer">www.tca.ac.tz</a></footer></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.gl.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.js') }}"></script></body></html>

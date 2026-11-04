@@ -1,0 +1,12 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AnonyHost - DarkWeb Hosting Tool</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas><div id="globe" aria-hidden="true"></div>
+<main style="margin:0 auto;display:grid;place-items:center;min-height:100vh;max-width:400px;padding:16px">
+<div class="card" style="width:100%;text-align:center">
+<div class="ttl" style="margin:4px 0 10px">AnonyHost has stopped</div>
+<p>{% if stopped %}Your website is offline.{% else %}Your website keeps running in the background. Open AnonyHost again to manage it.{% endif %}</p>
+<p class="mut">You can close this tab.</p></div></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.gl.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.js') }}"></script></body></html>

@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AnonyHost - DarkWeb Hosting Tool</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas>
+<main style="margin:0 auto;display:grid;place-items:center;min-height:100vh;max-width:400px;padding:16px">
+<form method="post" class="card" style="width:100%;text-align:center"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="AnonyHost" style="width:62%;mix-blend-mode:screen">
+<div class="ttl" style="margin:4px 0 6px">AnonyHost</div><p class="mut" style="margin:0 0 14px">First launch: create your administrator account.</p>
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+<input type="hidden" name="csrf" value="{{csrf}}">
+<input class="field" name="username" placeholder="username" autofocus required autocomplete="username" pattern="[A-Za-z0-9_.-]{3,32}">
+<input class="field" type="password" name="password" placeholder="password (10+ characters)" required minlength="10" autocomplete="new-password">
+<input class="field" type="password" name="confirm" placeholder="repeat password" required autocomplete="new-password">
+<button class="btn go" style="width:100%;justify-content:center">Create account</button>
+<p class="mut" style="margin:14px 0 0;font-size:13px">This dashboard can only be opened from this computer.</p></form></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<div class="author">Author: <a href="https://www.tca.ac.tz" target="_blank" rel="noopener noreferrer">www.tca.ac.tz</a></div>
+</body></html>

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Opens the AnonyHost Control Panel window; the terminal gets its prompt back and stays silent.
+DIR="$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)"
+PY="$DIR/.venv/bin/python"
+if [ "${1:-}" = "--foreground" ]; then shift; exec "$PY" "$DIR/panel.py" "$@"; fi
+LOG="${XDG_DATA_HOME:-$HOME/.local/share}/anonyhost/panel.log"; mkdir -p "$(dirname "$LOG")"
+setsid nohup "$PY" "$DIR/panel.py" "$@" >>"$LOG" 2>&1 </dev/null &

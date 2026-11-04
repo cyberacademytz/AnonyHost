@@ -1,0 +1,7 @@
+<aside class="side"><div class="brand"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="AnonyHost"></div>
+<a {% if page|default('home')=='home' %}class="on"{% endif %} href="/">Home</a><a href="/#deploy">Deploy</a><a href="/#hosting">Hosting</a>
+<span class="off">Files <em>soon</em></span><span class="off">Logs <em>soon</em></span><a {% if page=='settings' %}class="on"{% endif %} href="/settings">Settings</a>
+<div style="margin-top:auto"><button type="button" onclick="document.getElementById('quit').showModal()">Quit AnonyHost</button>
+<form method="post" action="/logout" style="margin:0"><input type="hidden" name="csrf" value="{{csrf}}"><button>Log out</button></form></div></aside>
+<dialog id="quit"><h2 style="margin-top:0">Quit AnonyHost?</h2><p class="mut">Your website can keep running in the background, or everything can be stopped.</p>
+<form method="post" action="/quit" class="row"><input type="hidden" name="csrf" value="{{csrf}}"><button class="btn go" name="stop_hosting" value="0">Quit, keep hosting</button><button class="btn stop" name="stop_hosting" value="1">Stop hosting &amp; quit</button><button class="btn ghost" formmethod="dialog">Cancel</button></form></dialog>

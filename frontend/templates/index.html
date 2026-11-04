@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>AnonyHost - DarkWeb Hosting Tool</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas><div id="globe" aria-hidden="true"></div>
+{% include "side.html" %}
+<main id="home">
+<header class="hero"><h1 class="ttl">AnonyHost - DarkWeb Hosting Tool</h1><p class="tag">Host any website on the Dark Web without a public IP, domain, or rented server.</p><span class="mut" id="up"></span></header>
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+{% if problem %}<div class="alert danger">{{problem}}</div>{% endif %}
+{% if missing %}<div class="alert warning">Missing: <b>{{missing|join(', ')}}</b>. Run <code>scripts/install_linux.sh</code>.</div>{% endif %}
+{% if conflict %}<section class="card fix" style="margin-bottom:16px"><h2>Port {{conflict.port}} is already in use</h2>
+<p>{% if conflict.owner %}It is used by <b>{{conflict.owner.name}}</b> (PID {{conflict.owner.pid}}).{% else %}Another program is using it (I can't tell which, it may belong to another user).{% endif %} How should I continue?</p>
+<div class="row">
+{% if conflict.owner %}<form method="post" action="/resolve" onsubmit="return confirm('Stop that program and continue?')"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="action" value="kill"><button class="btn stop">Stop that program &amp; continue</button></form>{% endif %}
+{% if conflict.alt %}<form method="post" action="/resolve"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="action" value="alt"><button class="btn go">Use port {{conflict.alt}} instead</button></form>{% endif %}
+<a class="btn ghost" href="/">Cancel</a></div></section>{% endif %}
+<div class="grid">
+<section class="card c12"><h2>Onion address</h2><div class="onion" id="onion">Not created yet</div>
+<div class="row"><button class="btn" id="copy">Copy address</button><form method="post" action="/open-tor"><input type="hidden" name="csrf" value="{{csrf}}"><button class="btn">Open in Tor Browser</button></form><a class="btn ghost" href="http://127.0.0.1:{{port}}" target="_blank" rel="noopener">Open website (local)</a><span class="mut" id="hint">Start hosting to create your address.</span></div></section>
+<section class="card c12"><h2>Services</h2><div class="tiles">
+{% for k,l in [('tor','Tor'),('web','Nginx'),('site','Website')] %}<div class="tile"><i class="dot" id="d-{{k}}"></i>{{l}}<small id="t-{{k}}">–</small></div>{% endfor %}</div>
+<p class="mut" style="margin:14px 0 0">Last deployed: <span id="dep">never</span></p></section>
+<section class="card c6" id="deploy"><h2>Deploy a website</h2>
+<form method="post" action="/deploy" enctype="multipart/form-data" class="row"><input type="hidden" name="csrf" value="{{csrf}}">
+<input type="file" name="zip" accept=".zip" required aria-label="Website ZIP"><button class="btn go">Deploy</button></form>
+<p class="mut">ZIP with index.html at its top level. Max 100 MB.</p></section>
+<section class="card c6" id="hosting"><h2>Hosting</h2><div class="row">
+<form method="post" action="/start"><input type="hidden" name="csrf" value="{{csrf}}"><button class="btn go">Start hosting</button></form>
+<form method="post" action="/stop" onsubmit="return confirm('Stop hosting? Visitors will lose access.')"><input type="hidden" name="csrf" value="{{csrf}}"><button class="btn stop">Stop hosting</button></form></div>
+<p class="mut">Tor can take a minute or two to publish your address.</p></section>
+</div><footer>Author: <a href="https://www.tca.ac.tz" target="_blank" rel="noopener noreferrer">www.tca.ac.tz</a></footer></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.gl.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/globe.js') }}"></script>
+<script>
+const $=i=>document.getElementById(i);
+function dot(k,s,t){$('d-'+k).className='dot '+s;$('t-'+k).textContent=t;}
+async function poll(){let r;try{r=await fetch('/api/status')}catch{return}if(!r.ok)return;const s=await r.json();
+if(s.uptime!=null)$('up').textContent='Up '+Math.floor(s.uptime/86400)+'d '+Math.floor(s.uptime%86400/3600)+'h';
+dot('tor',s.tor?(s.bootstrap<100?'mid':'on'):'',s.tor?(s.bootstrap<100?'Starting '+s.bootstrap+'%':'Connected'):'Stopped');
+dot('web',s.web?'on':'',s.web?'127.0.0.1 only':'Stopped');dot('site',s.site?'on':'',s.site?'Deployed':'None');
+$('dep').textContent=s.deployed||'never';$('onion').textContent=s.onion||'Not created yet';
+$('hint').textContent=s.onion?(s.tor&&s.bootstrap>=100?'Reachable through Tor Browser.':'Address saved. Start hosting to bring it online.'):'Start hosting to create your address.';}
+$('copy').onclick=()=>{const t=$('onion').textContent;if(t.endsWith('.onion'))navigator.clipboard.writeText(t)};
+poll();setInterval(poll,3000);</script></body></html>
