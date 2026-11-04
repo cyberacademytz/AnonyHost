@@ -1,5 +1,5 @@
 
-<img width="1027" height="1531" alt="Neon Question Mark Hacker Laptop" src="https://github.com/user-attachments/assets/025ed5eb-795f-47aa-8e25-108e229940be" />
+<img width="400" alt="Neon Question Mark Hacker Laptop" src="https://github.com/user-attachments/assets/025ed5eb-795f-47aa-8e25-108e229940be" />
 
 # AnonyHost
 **AnonyHost** turns your local PC into a DarkWeb Server and Host any website on the Dark Web without a public IP, domain, or rented server.
