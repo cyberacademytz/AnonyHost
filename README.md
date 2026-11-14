@@ -1,7 +1,7 @@
 # AnonyHost - DarkWeb Hosting Tool
 Host a website as a Tor v3 onion service from your own PC: no public IP, domain or port forwarding. Static sites, PHP, Node.js and Python apps are supported.
 
-**Status:** Ubuntu/Debian only. Windows and onion key backup are NOT implemented yet.
+**Status:** Ubuntu/Debian only. Windows or other OS environment are NOT implemented yet.
 <img width="1920" height="1044" alt="Dashboard" src="https://github.com/user-attachments/assets/a3878061-55e5-452e-b9e1-6bf5290a9d73" />
 
 
