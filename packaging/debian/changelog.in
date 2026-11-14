@@ -1,0 +1,15 @@
+anonyhost (@VERSION@) unstable; urgency=medium
+
+  * Dashboard (read-only overview) and Website page (deploy, start, stop).
+  * Static, PHP, Node.js and Python sites.
+  * Files page with a code editor (syntax colours, auto-indent, Ctrl+S) and
+    a "Delete all" button; Logs page.
+  * Health page and automatic repair: busy ports, crashed services, missing
+    packages and modules, known PHP / Node.js / Python / nginx / Tor errors.
+  * Debian package: program in /opt/anonyhost, commands anonyhost and
+    anonyhost-stop, one menu entry (the dashboard), manual page.
+  * The desktop Control Panel was removed: the dashboard, behind its login,
+    is the only way to manage AnonyHost. A lost password is reset in a
+    terminal with "anonyhost --reset-password".
+
+ -- @MAINTAINER@  @DATE@

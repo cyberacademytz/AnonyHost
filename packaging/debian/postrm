@@ -1,0 +1,22 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 www.tca.ac.tz (https://www.tca.ac.tz)
+# AnonyHost is free software under the GNU General Public License, version 3 or (at your option) any later version.
+# It comes WITHOUT ANY WARRANTY. See the LICENSE file.
+set -e
+ROOT="${DPKG_ROOT:-}"
+case "$1" in
+    remove|purge|abort-install|disappear)
+        rm -rf "$ROOT/opt/anonyhost/__pycache__" "$ROOT"/opt/anonyhost/*/__pycache__ 2>/dev/null || true
+        # dpkg tries to remove folders before this script runs, so remove the ones that are empty now
+        find "$ROOT/opt/anonyhost" -depth -type d -empty -delete 2>/dev/null || true
+        ;;
+esac
+case "$1" in
+    purge)
+        # only AnonyHost's own bookkeeping. Websites, settings and onion keys in users' home folders are never removed.
+        rm -rf "$ROOT/var/lib/anonyhost"
+        rmdir "$ROOT/etc/anonyhost" 2>/dev/null || true
+        ;;
+esac
+exit 0

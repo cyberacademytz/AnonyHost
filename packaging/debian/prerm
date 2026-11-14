@@ -1,0 +1,28 @@
+#!/bin/sh
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 www.tca.ac.tz (https://www.tca.ac.tz)
+# AnonyHost is free software under the GNU General Public License, version 3 or (at your option) any later version.
+# It comes WITHOUT ANY WARRANTY. See the LICENSE file.
+set -e
+ROOT="${DPKG_ROOT:-}"
+case "$1" in
+    remove|upgrade|deconfigure)
+        # close dashboards that are running files which are about to change (hosting itself keeps running)
+        if [ -z "$ROOT" ]; then
+            pkill -f '/opt/anonyhost/launcher\.py' >/dev/null 2>&1 || true
+            if command -v py3clean >/dev/null 2>&1; then
+                py3clean -p anonyhost /opt/anonyhost >/dev/null 2>&1 || true
+            fi
+        fi
+        ;;
+esac
+case "$1" in
+    remove)
+        # give the system tor / nginx services back if installing AnonyHost switched them off
+        if [ -r "$ROOT/usr/lib/anonyhost/system-services.sh" ]; then
+            . "$ROOT/usr/lib/anonyhost/system-services.sh"
+            restore_services || true
+        fi
+        ;;
+esac
+exit 0

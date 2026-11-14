@@ -1,0 +1,50 @@
+.TH ANONYHOST 1 "2026" "AnonyHost" "User Commands"
+.SH NAME
+anonyhost, anonyhost-stop \- host a website as a Tor onion service from your own computer
+.SH SYNOPSIS
+.B anonyhost
+[\fIOPTIONS\fR]
+.br
+.B anonyhost-stop
+.SH DESCRIPTION
+.B anonyhost
+starts the AnonyHost dashboard, a web interface that only listens on 127.0.0.1, and opens it in a window
+or your default browser. Only one dashboard runs per user.
+.PP
+.B anonyhost-stop
+stops the dashboard and the hosted website (Tor and nginx).
+.SH OPTIONS
+.TP
+.B \-\-foreground
+Stay attached to the terminal instead of detaching.
+.TP
+.B \-\-no\-browser
+Do not open a window or browser.
+.TP
+.B \-\-stop
+Stop the dashboard. Hosting keeps running.
+.TP
+.B \-\-stop\-all
+Stop the dashboard and the hosted website.
+.TP
+.B \-\-reset\-password
+Remove the administrator account. A new one is created at the next launch.
+.TP
+.B \-\-factory\-reset
+Return AnonyHost to its first-run state (asks for confirmation). The onion keys are kept.
+.TP
+.B \-\-delete\-keys
+With \-\-factory\-reset, also delete the onion keys. The .onion address is lost for good.
+.SH FILES
+.TP
+.I ~/.local/share/anonyhost
+Your website, settings, logs and onion keys (or the directory in $ANONYHOST_DATA). Never removed by the package.
+.TP
+.I /opt/anonyhost
+The program.
+.TP
+.I /etc/anonyhost/keep-system-services
+If this file exists when the package is installed, the system tor and nginx services are left untouched.
+.SH SEE ALSO
+.BR tor (1),
+.BR nginx (8)

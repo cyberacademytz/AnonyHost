@@ -1,0 +1,41 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Website - AnonyHost</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas>
+{% include "side.html" %}
+<main><header class="hero"><h1 class="ttl">Website</h1><p class="tag">Deploy your site and control hosting in one place.</p></header>
+{% include "_alerts.html" %}
+{% if conflict %}<section class="card fix" style="margin-bottom:16px"><h2>Port {{conflict.port}} is already in use</h2>
+<p>{% if conflict.owner %}It is used by <b>{{conflict.owner.name}}</b> (PID {{conflict.owner.pid}}).{% else %}Another program is using it (I can't tell which, it may belong to another user).{% endif %} How should I continue?</p>
+<div class="row">
+{% if conflict.owner %}<form method="post" action="/resolve" onsubmit="return confirm('Stop that program and continue?')"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="action" value="kill"><button class="btn stop">Stop that program &amp; continue</button></form>{% endif %}
+{% if conflict.alt %}<form method="post" action="/resolve"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="action" value="alt"><button class="btn go">Use port {{conflict.alt}} instead</button></form>{% endif %}
+<a class="btn ghost" href="/website">Cancel</a></div></section>{% endif %}
+<div class="grid">
+<section class="card c6" id="deploy"><h2>Deploy a website</h2>
+<form method="post" action="/deploy" enctype="multipart/form-data" class="row"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="website">
+<input type="file" name="zip" accept=".zip" required aria-label="Website ZIP"><button class="btn go">Deploy</button></form>
+<p class="mut">Static: <b>index.html</b>. Dynamic: <b>index.php</b> (PHP), <b>package.json</b> or <b>server.js</b> (Node.js), <b>app.py</b> (Python) or <b>anonyhost.json</b>, at the top level of the ZIP. Max {{max_gb}} GB.</p>
+<p class="mut">Deploying replaces the current site. If hosting is running it restarts automatically, and your onion address stays the same.</p></section>
+<section class="card c6" id="hosting"><h2>Hosting</h2><div class="row">
+<form method="post" action="/start"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="website"><button class="btn go">Start hosting</button></form>
+<form method="post" action="/restart-site"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="website"><button class="btn">Restart site</button></form>
+<form method="post" action="/stop" onsubmit="return confirm('Stop hosting? Visitors will lose access.')"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="website"><button class="btn stop">Stop hosting</button></form></div>
+<div class="tiles" style="margin-top:14px">{% for k,l in [('tor','Tor'),('web','Nginx'),('site','Site')] %}<div class="tile"><i class="dot" id="d-{{k}}"></i>{{l}}<small id="t-{{k}}">&ndash;</small></div>{% endfor %}</div>
+<p class="mut" style="margin:12px 0 0">Tor can take a minute or two to publish your address. Restart applies changes to Node.js and Python apps; Tor stays up.</p></section>
+<section class="card c12"><h2>Current site</h2><dl class="kv wide">
+<dt>Type</dt><dd id="s-kind">{{kind or 'None'}}</dd><dt>Last deployed</dt><dd id="dep">never</dd><dt>Onion address</dt><dd><span class="onion sm" id="onion">Not created yet</span> <button type="button" class="btn sm" id="copy">Copy</button><span class="sr" role="status" id="copymsg"></span></dd>
+<dt>Local address</dt><dd><a class="lnk" href="http://127.0.0.1:{{port}}" target="_blank" rel="noopener">http://127.0.0.1:{{port}}</a> <span class="mut">(this computer only)</span></dd><dt>Files</dt><dd>{{files}}</dd></dl>
+<div class="row" style="margin-top:12px"><a class="btn" href="/files">Browse and edit files</a><a class="btn ghost" href="/logs">View logs</a><a class="btn ghost" href="/">Back to dashboard</a></div></section>
+</div></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/copy.js') }}"></script>
+<script>
+const $=i=>document.getElementById(i);
+function dot(k,s,t){$('d-'+k).className='dot '+s;$('t-'+k).textContent=t;}
+async function poll(){let r;try{r=await fetch('/api/status')}catch{return}if(!r.ok)return;const s=await r.json(),starting=s.tor&&s.bootstrap<100;
+dot('tor',s.tor?(starting?'mid':'on'):'',s.tor?(starting?'Starting '+s.bootstrap+'%':'Connected'):'Stopped');
+dot('web',s.web?'on':'',s.web?'127.0.0.1 only':'Stopped');dot('site',s.site?'on':'',s.site?(s.kind||'Deployed'):'None');
+$('s-kind').textContent=s.kind||'None';$('dep').textContent=s.deployed||'never';$('onion').textContent=s.onion||'Not created yet'}
+$('copy').onclick=()=>copyText($('copy'),$('onion').textContent.trim());
+poll();setInterval(poll,3000);</script></body></html>

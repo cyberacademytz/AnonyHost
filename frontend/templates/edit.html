@@ -1,0 +1,21 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>{{name}} - AnonyHost</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body class="ide-page"><canvas id="stars" aria-hidden="true"></canvas>
+{% include "side.html" %}
+<main class="ide-main">
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+<div class="ide" id="ide" data-name="{{name}}" data-close="/files{% if parent %}?path={{parent|urlencode}}{% endif %}">
+<form method="post" action="/files/save" id="saveform" class="ide-form"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="path" value="{{rel}}">
+<div class="ide-bar"><div class="ide-path"><a href="/files">site</a>{% for n,r in crumbs %} / {% if not loop.last %}<a href="/files?path={{r|urlencode}}">{{n}}</a>{% else %}<b>{{n}}</b>{% endif %}{% endfor %}</div>
+<span class="pill" id="lang">&nbsp;</span>
+<button type="submit" class="btn go sm" id="save" title="Ctrl+S">Save</button><a class="btn ghost sm" id="close" href="/files{% if parent %}?path={{parent|urlencode}}{% endif %}" title="Esc">Close</a></div>
+<div class="ide-body"><div class="gutter" id="gut" aria-hidden="true"><pre id="gutin">1</pre></div>
+<div class="pane"><div class="curline" id="curline" aria-hidden="true"></div><pre class="hl" id="hl" aria-hidden="true"></pre>
+<textarea id="code" name="content" wrap="off" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" aria-label="File contents">
+{{text}}</textarea></div></div>
+<div class="ide-status"><span id="pos">Ln 1, Col 1</span><span id="indent"></span><span>UTF-8</span><span>LF</span><span id="size"></span><span id="dirty">saved</span><span id="msg" role="status"></span><span class="keys">Ctrl+S save &middot; Esc close &middot; Tab indent</span></div>
+</form></div></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor-core.js') }}"></script>
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script></body></html>

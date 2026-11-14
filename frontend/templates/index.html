@@ -1,0 +1,66 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Dashboard - AnonyHost</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas>
+{% include "side.html" %}
+<main id="home">
+<header class="hero"><h1 class="ttl">AnonyHost - DarkWeb Hosting Tool</h1><p class="tag">Host any website on the Dark Web without a public IP, domain, or rented server.</p></header>
+{% include "_alerts.html" %}
+<a class="hstrip ok" id="hstrip" href="/health">Checking health&hellip;</a>
+<div class="grid">
+<section class="card c12 banner off" id="banner"><div><div class="bstate" id="bstate">OFFLINE</div><div class="mut" id="bmsg">Hosting is stopped.</div></div>
+<div class="bprog" id="bprog" hidden><div class="bar"><i id="bbar"></i></div><small class="mut" id="bpct"></small></div></section>
+
+<section class="card c8"><h2>Onion address</h2><div class="onion" id="onion">Not created yet</div>
+<div class="row"><button class="btn" id="copy">Copy address</button><form method="post" action="/open-tor"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="dashboard"><button class="btn">Open in Tor Browser</button></form><a class="btn ghost" href="http://127.0.0.1:{{port}}" target="_blank" rel="noopener">Open website (local)</a></div>
+<span class="sr" role="status" id="copymsg"></span><p class="mut" id="hint" style="margin:12px 0 0">Start hosting to create your address.</p></section>
+<section class="card c4"><h2>Quick actions</h2><div class="row">
+<form method="post" action="/start"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="dashboard"><button class="btn go">Start</button></form>
+<form method="post" action="/restart-site"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="dashboard"><button class="btn">Restart</button></form>
+<form method="post" action="/stop" onsubmit="return confirm('Stop hosting? Visitors will lose access.')"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="next" value="dashboard"><button class="btn stop">Stop</button></form></div>
+<p style="margin:14px 0 0"><a class="lnk" href="/website">Manage website &rarr;</a></p></section>
+
+<section class="card c4"><h2>Site</h2><dl class="kv">
+<dt>Type</dt><dd id="s-kind">{{kind or 'None'}}</dd><dt>Last deployed</dt><dd id="dep">never</dd><dt>Local port</dt><dd>{{port}}</dd><dt>Files</dt><dd>{{files}}</dd></dl>
+<div class="tiles" style="margin-top:12px">{% for k,l in [('tor','Tor'),('web','Nginx'),('site','Site')] %}<div class="tile"><i class="dot" id="d-{{k}}"></i>{{l}}<small id="t-{{k}}">&ndash;</small></div>{% endfor %}</div></section>
+<section class="card c4"><h2>System health</h2>
+{% for k,l in [('cpu','CPU'),('ram','RAM'),('disk','Disk')] %}<div class="hrow"><span>{{l}}</span><span class="mut" id="h-{{k}}">&ndash;</span></div><div class="bar"><i id="b-{{k}}"></i></div>{% endfor %}
+<p class="mut" id="os" style="margin:12px 0 0"></p></section>
+<section class="card c4"><h2>Setup checklist</h2><ul class="checks" id="checks"><li class="mut">Loading&hellip;</li></ul></section>
+
+<section class="card c12"><h2>Recent activity <a class="badge" id="errs" href="/logs?errors=1" hidden></a></h2>
+<div class="logbox short" id="act"><div class="mut">Loading&hellip;</div></div><p style="margin:10px 0 0"><a class="lnk" href="/logs">Open all logs &rarr;</a></p></section>
+</div></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script src="{{ url_for('static', filename='js/copy.js') }}"></script>
+<script>
+const $=i=>document.getElementById(i);
+function dot(k,s,t){$('d-'+k).className='dot '+s;$('t-'+k).textContent=t;}
+function bar(k,p){$('b-'+k).style.width=Math.max(0,Math.min(100,p))+'%';$('b-'+k).className=p>=90?'hot':p>=70?'warm':'';}
+function li(c){const e=document.createElement('li');e.className=c.ok?'ok':'no';const m=document.createElement('span');m.className='mark';m.textContent=c.ok?'\u2713':'\u2717';e.appendChild(m);
+ e.appendChild(document.createTextNode(' '+c.label));if(c.ok&&c.note){const n=document.createElement('small');n.className='mut';n.textContent=' ('+c.note+')';e.appendChild(n)}
+ if(!c.ok&&c.hint){const h=document.createElement(c.href?'a':'small');h.className=c.href?'lnk hint':'hint';if(c.href)h.href=c.href;h.textContent=c.hint;e.appendChild(document.createElement('br'));e.appendChild(h)}return e}
+async function poll(){let r;try{r=await fetch('/api/status')}catch{return}if(!r.ok)return;const s=await r.json();
+const starting=s.tor&&s.bootstrap<100,online=s.tor&&s.bootstrap>=100&&s.web,b=$('banner');
+b.className='card c12 banner '+(online?'on':starting?'mid':(s.tor||s.web)?'mid':'off');
+$('bstate').textContent=online?'ONLINE':starting?'STARTING':(s.tor||s.web)?'PARTIAL':'OFFLINE';
+$('bmsg').textContent=online?'Your site is reachable through Tor Browser.':starting?'Tor is building its circuits. This can take a minute or two.':(s.tor||s.web)?'Some services are stopped. Use Start or Restart.':'Hosting is stopped.';
+$('bprog').hidden=!starting;if(starting){$('bbar').style.width=s.bootstrap+'%';$('bpct').textContent=s.bootstrap+'%'}
+dot('tor',s.tor?(starting?'mid':'on'):'',s.tor?(starting?'Starting '+s.bootstrap+'%':'Connected'):'Stopped');
+dot('web',s.web?'on':'',s.web?'127.0.0.1 only':'Stopped');dot('site',s.site?'on':'',s.site?(s.kind||'Deployed'):'None');
+$('s-kind').textContent=s.kind||'None';$('dep').textContent=s.deployed||'never';$('onion').textContent=s.onion||'Not created yet';
+$('hint').textContent=s.onion?(online?'Reachable through Tor Browser.':'Address saved. Start hosting to bring it online.'):'Start hosting to create your address.';
+if(s.load!=null){bar('cpu',s.load);$('h-cpu').textContent='load '+(s.load*s.cores/100).toFixed(2)+' on '+s.cores+(s.cores==1?' core':' cores');const rp=Math.round(s.ram_used/s.ram_total*100),dp=Math.round(s.disk_used/s.disk_total*100);
+bar('ram',rp);$('h-ram').textContent=s.ram_used+' / '+s.ram_total+' MB';bar('disk',dp);$('h-disk').textContent=s.disk_used+' / '+s.disk_total+' GB';$('os').textContent=s.os||''}
+const ul=$('checks');ul.textContent='';for(const c of s.checks||[])ul.appendChild(li(c));}
+async function activity(){let r;try{r=await fetch('/api/activity')}catch{return}if(!r.ok)return;const d=await r.json(),box=$('act');box.textContent='';
+if(!d.rows.length){const e=document.createElement('div');e.className='mut';e.textContent='(no activity yet)';box.appendChild(e)}
+for(const x of d.rows){const e=document.createElement('div');if(x.c)e.className=x.c;e.textContent=x.t;box.appendChild(e)}box.scrollTop=box.scrollHeight;
+const eb=$('errs');eb.hidden=!d.errors;eb.textContent=d.errors+' error line'+(d.errors==1?'':'s')}
+$('copy').onclick=()=>copyText($('copy'),$('onion').textContent.trim());
+async function health(){let r;try{r=await fetch('/api/health')}catch{return}if(!r.ok)return;const d=await r.json(),h=$('hstrip');
+if(d.errors){h.className='hstrip bad';h.textContent='\u2717 '+d.errors+' problem'+(d.errors==1?'':'s')+' need attention: '+d.items.filter(i=>i.level=='error').map(i=>i.title).slice(0,2).join(' | ')+'  \u2192 Fix'}
+else if(d.warnings){h.className='hstrip warn';h.textContent='! '+d.warnings+' warning'+(d.warnings==1?'':'s')+': '+d.items.map(i=>i.title).slice(0,2).join(' | ')+'  \u2192 Details'}
+else{h.className='hstrip ok';h.textContent='\u2713 No problems found'}}
+health();setInterval(health,10000);
+poll();activity();setInterval(poll,3000);setInterval(activity,10000);</script></body></html>

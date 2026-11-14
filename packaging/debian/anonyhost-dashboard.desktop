@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=AnonyHost Dashboard
+Comment=Open the AnonyHost dashboard
+Exec=anonyhost
+Icon=anonyhost
+Terminal=false
+Categories=Network;Utility;
+Keywords=tor;onion;hosting;darkweb;
+StartupNotify=false

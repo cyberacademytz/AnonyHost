@@ -1,0 +1,29 @@
+Package: anonyhost
+Version: @VERSION@
+Section: net
+Priority: optional
+Architecture: all
+Installed-Size: @SIZE@
+Depends: python3 (>= 3.10), python3-flask (>= 2.0), tor, nginx, procps
+Recommends: torbrowser-launcher, pkexec | policykit-1
+Suggests: php-fpm, nodejs, npm, python3-venv, chromium | chromium-browser | google-chrome-stable
+Maintainer: @MAINTAINER@
+Homepage: https://www.tca.ac.tz
+Description: host a website as a Tor onion service from your own computer
+ AnonyHost publishes a website on the Tor network (a .onion address) straight
+ from your own PC: no public IP address, domain name, port forwarding or
+ rented server is needed. Static sites, PHP, Node.js and Python apps are
+ supported.
+ .
+ It runs its own private Tor and nginx as your normal user, shows a local
+ dashboard (files, logs, health checks, one-click deploy) and repairs common
+ hosting problems automatically.
+ .
+ Your website, settings and onion keys live in ~/.local/share/anonyhost and
+ are never touched by installing, upgrading or removing this package.
+ .
+ Because AnonyHost does not use the system tor and nginx services, installing
+ the package switches those two services off when they still have their
+ default, unmodified configuration (and switches them back on when AnonyHost
+ is removed). Create /etc/anonyhost/keep-system-services before installing to
+ prevent that.

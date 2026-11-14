@@ -1,0 +1,4 @@
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+{% if problem %}<div class="alert danger">{{problem}}</div>{% endif %}
+{% if missing %}<div class="alert warning">Missing: <b>{{missing|join(', ')}}</b>. Install with <code>sudo apt install {{missing|join(' ')}}</code>.</div>{% endif %}
+{% if need_rt %}<div class="alert warning">This {{kind}} site needs <b>{{need_rt}}</b>, which is not installed. Install it with <code>sudo apt install {{need_apt}}</code>, then start hosting.</div>{% endif %}

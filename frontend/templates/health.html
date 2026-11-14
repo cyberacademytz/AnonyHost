@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Health - AnonyHost</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas>
+{% include "side.html" %}
+<main><header class="hero"><h1 class="ttl">Health</h1><p class="tag">Problems with hosting, and how they get fixed. AnonyHost repairs most of them by itself.</p></header>
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+<div class="grid">
+<section class="card c12"><div class="row" style="justify-content:space-between">
+<div><span class="pill {{ 'okp' if auto else 'offp' }}">Automatic fixing is {{ 'ON' if auto else 'OFF' }}</span> <a class="lnk" href="/settings" style="margin-left:10px">{{ 'Change in Settings' if auto else 'Turn it on in Settings' }}</a></div>
+<div class="row"><a class="btn" href="/health">Recheck</a>
+{% if fixable %}<form method="post" action="/health/fix"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="id" value="all"><button class="btn go">Fix everything automatically</button></form>{% endif %}
+{% if pkgs and install.state != 'running' %}<form method="post" action="/health/install"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="id" value="all"><button class="btn go" title="Opens your system's password prompt">Install missing packages</button></form>{% endif %}</div></div></section>
+
+{% if install.state != 'idle' %}<section class="card c12" id="inst"><h2>Installing packages</h2>
+<p id="inststate" class="mut">{% if install.state == 'running' %}Waiting for your approval in the password prompt, then installing: <b>{{install.pkgs|join(', ')}}</b>&hellip;{% elif install.state == 'done' %}Finished. <a class="lnk" href="/health">Recheck</a>{% else %}The installation did not finish (code {{install.rc}}). In a terminal, run: <code>{{install.manual}}</code>{% endif %}</p>
+<div class="logbox short" id="instlog">{{install.tail}}</div></section>{% endif %}
+
+{% for f in findings %}<section class="card c12 finding {{f.level}}"><div class="frow"><span class="lvl {{f.level}}">{{ {'error':'PROBLEM','warn':'WARNING','info':'INFO','ok':'OK'}[f.level] }}</span>
+<div class="fbody"><h3>{{f.title}}</h3>{% if f.detail %}<p class="mut">{{f.detail}}</p>{% endif %}
+{% if f.root and f.pkgs %}<p class="mut">Needs: <code>sudo apt install {{f.pkgs|join(' ')}}</code></p>{% endif %}</div>
+<div class="fact">{% if f.root and f.pkgs and install.state != 'running' %}<form method="post" action="/health/install"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="id" value="{{f.id}}"><button class="btn go sm">{{f.fix_label}}</button></form>
+{% elif f.fix and not f.root %}<form method="post" action="/health/fix"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="id" value="{{f.id}}"><button class="btn go sm">{{f.fix_label}}</button></form>{% endif %}</div></div></section>{% endfor %}
+
+<section class="card c12"><h2>Recent automatic actions</h2>
+<div class="logbox short">{% for l in history %}<div>{{l}}</div>{% else %}<div class="mut">Nothing has needed fixing yet.</div>{% endfor %}</div>
+<p style="margin:10px 0 0"><a class="lnk" href="/logs?name=Auto-fix">Open the full log &rarr;</a></p></section>
+</div></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+{% if install.state == 'running' %}<script>
+(async function poll(){const r=await fetch('/api/install').catch(()=>null);if(r&&r.ok){const d=await r.json();document.getElementById('instlog').textContent=d.tail||'';
+if(d.state!=='running'){location.reload();return}}setTimeout(poll,2000)})();
+</script>{% endif %}</body></html>

@@ -1,0 +1,28 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Logs - AnonyHost</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/torhost.css') }}"></head>
+<body><canvas id="stars" aria-hidden="true"></canvas>
+{% include "side.html" %}
+<main><header class="hero"><h1 class="ttl">Logs</h1><p class="tag">What AnonyHost, Tor, Nginx and your site are reporting.</p></header>
+{% for c,m in get_flashed_messages(with_categories=true) %}<div class="alert {{c}}">{{m}}</div>{% endfor %}
+<section class="card c12">
+<div class="tabs">{% for n in names %}<a class="{% if n==name %}on{% endif %}" href="/logs?name={{n|urlencode}}">{{n}}</a>{% endfor %}</div>
+<form method="get" action="/logs" class="row" style="margin:14px 0"><input type="hidden" name="name" value="{{name}}">
+<input class="field inl" style="flex:1;min-width:180px" name="q" value="{{q}}" placeholder="filter lines" maxlength="100" autocomplete="off">
+<label class="lbl" style="margin:0"><input type="checkbox" name="errors" value="1" {% if errs %}checked{% endif %}> Errors only</label>
+<button class="btn">Filter</button><label class="lbl" style="margin:0"><input type="checkbox" id="live" checked> Live</label></form>
+<div class="logbox" id="log" tabindex="0" aria-live="off">{% for r in rows %}<div class="{{r.c}}">{{r.t}}</div>{% else %}<div class="mut">(no entries)</div>{% endfor %}</div>
+<form method="post" action="/logs/clear" class="row" style="margin-top:12px" onsubmit="return confirm('Clear the {{name|e}} log?')"><input type="hidden" name="csrf" value="{{csrf}}"><input type="hidden" name="name" value="{{name}}"><button class="btn ghost">Clear this log</button></form>
+</section></main>
+<script src="{{ url_for('static', filename='js/stars.js') }}"></script>
+<script>
+const box=document.getElementById('log'),live=document.getElementById('live');
+const qs=new URLSearchParams({name:{{name|tojson}},q:{{q|tojson}},errors:{{ '1' if errs else '0' }}});
+box.scrollTop=box.scrollHeight;
+async function tick(){if(!live.checked||document.hidden)return;let r;try{r=await fetch('/api/logs?'+qs)}catch{return}if(!r.ok)return;
+const d=await r.json(),atEnd=box.scrollHeight-box.scrollTop-box.clientHeight<40;box.textContent='';
+if(!d.rows.length){const e=document.createElement('div');e.className='mut';e.textContent='(no entries)';box.appendChild(e)}
+for(const x of d.rows){const e=document.createElement('div');if(x.c)e.className=x.c;e.textContent=x.t;box.appendChild(e)}
+if(atEnd)box.scrollTop=box.scrollHeight}
+setInterval(tick,3000);
+</script></body></html>
